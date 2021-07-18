@@ -603,15 +603,20 @@ pub fn commitOpacityTransition(self: *Self) void {
     }
 }
 
-/// Only honors the request if the view is already visible on the seat's
-/// currently focused output. TODO: consider allowing this request to switch
-/// output/tag focus.
 fn handleForeignActivate(
     listener: *wl.Listener(*wlr.ForeignToplevelHandleV1.event.Activated),
     event: *wlr.ForeignToplevelHandleV1.event.Activated,
 ) void {
     const self = @fieldParentPtr(Self, "foreign_activate", listener);
     const seat = @intToPtr(*Seat, event.seat.data);
+
+    // If view is not currently visible, focus its tags.
+    if (self.output.pending.tags & self.pending.tags == 0) {
+        self.output.pending.tags = self.pending.tags;
+        self.output.arrangeViews();
+    }
+
+    // Will change output focus, if necessary.
     seat.focus(self);
     server.root.startTransaction();
 }
