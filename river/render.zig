@@ -45,12 +45,62 @@ const SurfaceRenderData = struct {
     when: *os.timespec,
 };
 
+fn scanOutView(output: *Output, view: *View) bool {
+    // Some things want to be rendered even above fullscreen surfaces. We need
+    // to composite in those cases.
+    if (build_options.xwayland and server.root.xwayland_unmanaged_views.next != null) return false;
+    if (output.getLayer(.overlay).first != null) return false;
+    if (server.root.drag_icons.first != null) return false;
+
+    if (view.saved_buffers.items.len != 0) return false;
+    if (view.surface == null or view.surface.?.buffer == null) return false;
+
+    // If the surface has subsurfaces we need to composite.
+    if (!view.surface.?.subsurfaces.empty()) return false;
+
+    // The views scale and transform must match the output.
+    if (@intToFloat(f32, view.surface.?.current.scale) != output.wlr_output.scale) return false;
+    if (view.surface.?.current.transform != output.wlr_output.transform) return false;
+
+    output.wlr_output.attachBuffer(&view.surface.?.buffer.?.base);
+    if (!output.wlr_output.testCommit()) return false;
+    output.wlr_output.commit() catch {
+        log.err(
+            "output commit failed for {s} while attempting direct scanout",
+            .{mem.sliceTo(&output.wlr_output.name, 0)},
+        );
+        return false;
+    };
+    if (!output.last_frame_scanned_out) {
+        log.debug("start of direct scanout", .{});
+    }
+    output.last_frame_scanned_out = true;
+    return true;
+}
+
 /// The rendering order in this function must be kept in sync with Cursor.surfaceAt()
 pub fn renderOutput(output: *Output) void {
-    const renderer = output.wlr_output.backend.getRenderer().?;
-
     var now: os.timespec = undefined;
     os.clock_gettime(os.CLOCK_MONOTONIC, &now) catch @panic("CLOCK_MONOTONIC not supported");
+
+    // Find the first visible fullscreen view in the stack if there is one. We
+    // do this before checking for damage because we try to directly scan out
+    // buffers of fullscreen views, which must be done before a renderer is
+    // attached.
+    var it = ViewStack(View).iter(output.views.first, .forward, output.current.tags, renderFilter);
+    const fullscreen_view = while (it.next()) |view| {
+        if (view.current.fullscreen) {
+            // Try direct scanout, otherwise continue normal rendering.
+            if (scanOutView(output, view)) {
+                return;
+            } else if (output.last_frame_scanned_out) {
+                log.debug("end of direct scanout", .{});
+                output.last_frame_scanned_out = false;
+                output.damage.addWhole();
+            }
+            break view;
+        }
+    } else null;
 
     var needs_frame: bool = undefined;
     var damage_region: pixman.Region32 = undefined;
@@ -66,18 +116,14 @@ pub fn renderOutput(output: *Output) void {
         return;
     }
 
+    const renderer = output.wlr_output.backend.getRenderer().?;
     renderer.begin(@intCast(u32, output.wlr_output.width), @intCast(u32, output.wlr_output.height));
-
-    // Find the first visible fullscreen view in the stack if there is one
-    var it = ViewStack(View).iter(output.views.first, .forward, output.current.tags, renderFilter);
-    const fullscreen_view = while (it.next()) |view| {
-        if (view.current.fullscreen) break view;
-    } else null;
 
     // If we have a fullscreen view to render, render it.
     if (fullscreen_view) |view| {
         // Always clear with solid black for fullscreen
         renderer.clear(&[_]f32{ 0, 0, 0, 1 });
+
         renderView(output, view, &now);
         if (build_options.xwayland) renderXwaylandUnmanaged(output, &now);
     } else {

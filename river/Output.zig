@@ -56,6 +56,7 @@ const State = struct {
 
 wlr_output: *wlr.Output,
 damage: *wlr.OutputDamage,
+last_frame_scanned_out: bool = false,
 
 /// All layer surfaces on the output, indexed by the layer enum.
 layers: [4]std.TailQueue(LayerSurface) = [1]std.TailQueue(LayerSurface){.{}} ** 4,
