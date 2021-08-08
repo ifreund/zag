@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<protocol name="river_control_unstable_v1">
+<protocol name="river_control_unstable_v2">
   <copyright>
     Copyright 2020 The River Developers
 
@@ -16,17 +16,9 @@
     OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
   </copyright>
 
-  <interface name="zriver_control_v1" version="1">
+  <interface name="zriver_control_v2" version="1">
     <description summary="run compositor commands">
-      This interface allows clients to run compositor commands and receive a
-      success/failure response with output or a failure message respectively.
-
-      Each command is built up in a series of add_argument requests and
-      executed with a run_command request. The first argument is the command
-      to be run.
-
-      A complete list of commands should be made available in the man page of
-      the compositor.
+      This interface allows clients to control compositor behavior.
     </description>
 
     <request name="destroy" type="destructor">
@@ -37,49 +29,421 @@
       </description>
     </request>
 
-    <request name="add_argument">
-      <description summary="add an argument to the current command">
-        Arguments are stored by the server in the order they were sent until
-        the run_command request is made.
+    <request name="exit">
+      <description summary="exit the compositor">
+        This terminates the wayland session.
       </description>
-      <arg name="argument" type="string" summary="the argument to add"/>
     </request>
 
-    <request name="run_command">
-      <description summary="run the current command">
-        Execute the command built up using the add_argument request for the
-        given seat.
+    <request name="spawn">
+      <description summary="run a command">
+        The command will be executed using `/bin/sh -c`.
+      </description>
+      <arg name="command" type="string" summary="command to be run"/>
+    </request>
+
+    <request name="close">
+      <description summary="close the focused view"/>
+      <arg name="seat" type="object" interface="wl_seat"/>
+    </request>
+
+    <enum name="direction">
+      <entry name="next" value="0"/>
+      <entry name="previous" value="1"/>
+    </enum>
+
+    <request name="focus_view">
+      <description summary="focus the next or previous view"/>
+      <arg name="seat" type="object" interface="wl_seat"/>
+      <arg name="direction" type="uint" enum="direction">
+    </request>
+
+    <request name="focus_output">
+      <description summary="focus the next or previous output"/>
+      <arg name="seat" type="object" interface="wl_seat"/>
+      <arg name="direction" type="uint" enum="direction">
+    </request>
+
+    <request name="send_to_output">
+      <description summary="send the focused view to a neighboring output"/>
+      <arg name="seat" type="object" interface="wl_seat"/>
+      <arg name="direction" type="uint" enum="direction">
+    </request>
+
+    <request name="zoom">
+      <description summary="bump the focused view to the top of the stack">
+        If the focused view is already first in the layout stack, bump the
+        second view to the top.
       </description>
       <arg name="seat" type="object" interface="wl_seat"/>
-      <arg name="callback" type="new_id" interface="zriver_command_callback_v1"
-        summary="callback object"/>
+    </request>
+
+    <request name="swap">
+      <description summary="swap the focused view with a neighbor">
+        Swap the focused view with the next/previous visible view in the layout
+        (i.e. not floating). If the first/last view in the layout is focused,
+        wrap around.
+      </description>
+      <arg name="seat" type="object" interface="wl_seat"/>
+      <arg name="direction" type="uint" enum="direction">
+    </request>
+
+    <request name="set_focused_tags">
+      <description summary="set the visible tags of the focused output"/>
+      <arg name="seat" type="object" interface="wl_seat"/>
+      <arg name="tags" type="uint" summary="bitfield of tags to show"/>
+    </request>
+
+    <request name="set_view_tags">
+      <description summary="set the tags of the focused view"/>
+      <arg name="seat" type="object" interface="wl_seat"/>
+      <arg name="tags" type="uint" summary="bitfield of tags to set"/>
+    </request>
+
+    <request name="toggle_focused_tags">
+      <description summary="toggle visibile tags of the focused output"/>
+      <arg name="seat" type="object" interface="wl_seat"/>
+      <arg name="tags" type="uint" summary="bitfield of tags to toggle"/>
+    </request>
+
+    <request name="toggle_view_tags">
+      <description summary="toggle specified tags of the focused view"/>
+      <arg name="seat" type="object" interface="wl_seat"/>
+      <arg name="tags" type="uint" summary="bitfield of tags to toggle"/>
+    </request>
+
+    <request name="toggle_float">
+      <description summary="make the focused view float or stop floating"/>
+      <arg name="seat" type="object" interface="wl_seat"/>
+    </request>
+
+    <request name="toggle_fullscreen">
+      <description summary="toggle fullscreen for the focused view"/>
+      <arg name="seat" type="object" interface="wl_seat"/>
+    </request>
+
+    <request name="mod_main_count">
+      <description summary="modify number of main views">
+        Modify the number of main views of the focused output.
+      </description>
+      <arg name="seat" type="object" interface="wl_seat"/>
+      <arg name="delta" type="int" summary="delta applied to the count"/>
+    </request>
+
+    <request name="mod_main_factor">
+      <description summary="modify the size of the main area">
+        The main area is described by a value between 0.0 and 1.0 where 1.0.
+        Layout generators may use this in various ways. For the default
+        rivertile layout generator, this value is interpreted as a percentage
+        of the total width of the output.
+      </description>
+      <arg name="seat" type="object" interface="wl_seat"/>
+      <arg name="delta" type="fixed" summary="delta applied to the factor"/>
+    </request>
+
+    <enum name="axis">
+      <entry name="horizontal" value="0"/>
+      <entry name="vertical" value="1"/>
+    </enum>
+
+    <request name="move">
+      <description summary="move the focused view">
+        The view is set to floating if not already floating.
+      </description>
+      <arg name="seat" type="object" interface="wl_seat"/>
+      <arg name="axis" type="uint" enum="axis" summary="axis to move along"/>
+      <arg name="delta" type="int" summary="amount/direction along the axis"/>
+    </request>
+
+    <request name="resize">
+      <description summary="resize the focused view">
+        The view is set to floating if not already floating.
+      </description>
+      <arg name="seat" type="object" interface="wl_seat"/>
+      <arg name="axis" type="uint" enum="axis" summary="axis to resize along"/>
+      <arg name="delta" type="int" summary="amount/direction along the axis"/>
+    </request>
+
+    <enum name="edge">
+      <entry name="top" value="0"/>
+      <entry name="bottom" value="1"/>
+      <entry name="left" value="2"/>
+      <entry name="right" value="3"/>
+    </enum>
+
+    <request name="snap">
+      <description summary="snap the focused view to a screen edge">
+        The view is set to floating if not already floating.
+      </description>
+      <arg name="seat" type="object" interface="wl_seat"/>
+      <arg name="edge" type="uint" enum="edge" summary="edge to snap to"/>
+    </request>
+
+    <request name="layout">
+      <description summary="set the layout command">
+        Provide a command which river will use for generating the layout
+        of non-floating windows on the currently focused output. See
+        *river-layouts*(7) for details on the expected formatting of the
+        output of layout commands. Alternatively, "full" can be given
+        instead of a command to cause river to use its single internal layout,
+        in which windows span the entire width and height of the output.
+      </description>
+      <arg name="seat" type="object" interface="wl_seat"/>
+      <arg name="command" type="string" summary="the layout command"/>
+    </request>
+
+    <enum name="attach_mode">
+      <entry name="top" value="0"/>
+      <entry name="bottom" value="1"/>
+    </enum>
+
+    <request name="attach_mode">
+      <description summary="set the attach mode for the focused output">
+        Set where new views should attach to the view stack for the currently
+        focused output.
+      </description>
+      <arg name="seat" type="object" interface="wl_seat"/>
+      <arg name="mode" type="uint" enum="attach_mode"/>
+    </request>
+
+    <request name="csd_filter_add">
+      <description summary="add an app_id to the csd filter list">
+        Views with this app-id are allowed to use client side decorations
+        instead of the default server side decorations.
+      </description>
+      <arg name="app_id" type="string" summary="the app_id to filter"/>
+    </request>
+
+    <request name="float_filter_add">
+      <description summary="add an app_id to the float filter list">
+        Views with this app-id will start floating by default
+      </description>
+      <arg name="app_id" type="string" summary="the app_id to filter"/>
+    </request>
+
+    <request name="background_color">
+      <description summary="set the background color"/>
+      <arg name="red" type="fixed"/>
+      <arg name="green" type="fixed"/>
+      <arg name="blue" type="fixed"/>
+      <arg name="alpha" type="fixed"/>
+    </request>
+
+    <request name="border_color_focused">
+      <description summary="set the border color of focused views"/>
+      <arg name="red" type="fixed"/>
+      <arg name="green" type="fixed"/>
+      <arg name="blue" type="fixed"/>
+      <arg name="alpha" type="fixed"/>
+    </request>
+
+    <request name="border_color_unfocused">
+      <description summary="set the border color of unfocused views"/>
+      <arg name="red" type="fixed"/>
+      <arg name="green" type="fixed"/>
+      <arg name="blue" type="fixed"/>
+      <arg name="alpha" type="fixed"/>
+    </request>
+
+    <request name="border_width">
+      <description summary="set the border width"/>
+      <arg name="pixels" type="uint" summary="logical pixels"/>
+    </request>
+
+    <request name="outer_padding">
+      <description summary="set the padding around the edge of the screen"/>
+      <arg name="pixels" type="uint" summary="logical pixels"/>
+    </request>
+
+    <request name="view_padding">
+      <description summary="set the padding between views"/>
+      <arg name="pixels" type="uint" summary="logical pixels"/>
+    </request>
+
+    <request name="declare_mode">
+      <description summary="declare a new mode">
+        Modes are used when defining mappings. If a mode with the given name
+        already exists this request does nothing.
+      </description>
+      <arg name="name" type="string" summary="name of the new mode"/>
+    </request>
+
+    <request name="enter_mode">
+      <description summary="enter the given mode"/>
+      <arg name="seat" type="object" interface="wl_seat"/>
+      <arg name="name" type="string" summary="name of the new mode"/>
+      <arg name="callback" type="new_id" interface="zriver_enter_mode_callback_v2"/>
+    </request>
+
+    <enum name="modifiers" bitfield="true">
+      <entry name="none" value="0"/>
+      <entry name="shift" value="1"/>
+      <entry name="caps" value="2"/>
+      <entry name="ctrl" value="4"/>
+      <entry name="alt" value="8"/>
+      <entry name="mod2" value="16"/>
+      <entry name="mod3" value="32"/>
+      <entry name="logo" value="64"/>
+      <entry name="mod5" value="128"/>
+    </enum>
+
+    <request name="map">
+      <description summary="create, remove, or modify a mapping">
+        Create a mapping, overwriting an existing mapping if one already
+        exists for the mode/modifiers/key/state combination. If command is
+        null, instead remove the mapping if it exists.
+
+        A complete list of XKB key names for the key argument can usually be
+        found at /usr/include/xkbcommon/xkbcommon-keysyms.h.
+      </description>
+      <arg name="mode" type="string"/>
+      <arg name="modifiers" type="uint" enum="modifiers"/>
+      <arg name="key" type="string" summary="XKB key name"/>
+      <arg name="state" type="uint" enum="wl_keyboard.key_state"/>
+      <arg name="command" type="string" allow-null="true"/>
+      <arg name="callback" type="new_id" interface="zriver_map_callback_v2"/>
+    </request>
+
+    <enum name="pointer_action">
+      <entry name="command" value="0"/>
+      <entry name="move" value="1"/>
+      <entry name="resize" value="2"/>
+    </enum>
+
+    <request name="map_pointer">
+      <description summary="create, remove, or modify a pointer mapping">
+        Create a pointer mapping, overwriting an existing mapping if one
+        already exists for the mode/modifiers/button/state combination.
+
+        If action is pointer_action.command and the command arg is null,
+        the mapping will instead be removed if it exists. If the command
+        arg is non-null, it will be executed with `/bin/sh -c`.
+
+        If action is not pointer_action.command, then the command arg must
+        be null. Setting it to a non-null value is a protocol error.
+
+        A complete list of linux input event code names may be found in
+        /usr/include/linux/input-event-codes.h. The most commonly used values
+        are BTN_LEFT, BTN_RIGHT, and BTN_MIDDLE.
+      </description>
+      <arg name="mode" type="string"/>
+      <arg name="modifiers" type="uint" enum="modifiers"/>
+      <arg name="button" type="string" summary="linux input event code name"/>
+      <arg name="state" type="uint" enum="wl_pointer.button_state"/>
+      <arg name="action" type="uint" enum="pointer_action"/>
+      <arg name="command" type="string" allow-null="true"/>
+      <arg name="callback" type="new_id" interface="zriver_map_pointer_callback_v2"/>
+    </request>
+
+    <enum name="focus_follows_cursor_mode">
+      <entry name="disabled" value="0"/>
+      <entry name="normal" value="1"/>
+      <entry name="strict" value="2"/>
+    </enum>
+
+    <request name="focus_follows_cursor">
+      <description summary="set focus follows cursor mode"/>
+      <arg name="mode" type="uint" enum="focus_follows_cursor_mode"/>
+    </request>
+
+    <request name="repeat_info">
+      <description summary="set repeat info globally">
+        Set the values of the wl_keyboard.repeat_info event for all keyboards
+        (per-keyboard configuration is TODO)
+
+        As with wl_keyboard.repeat_info, negative values are illegal and a
+        protocol error.
+      </description>
+      <arg name="rate" type="int"
+        summary="the rate of repeating keys in characters per second"/>
+      <arg name="delay" type="int"
+        summary="delay in milliseconds since key down until repeating starts"/>
+    </request>
+
+    <request name="xcursor_theme">
+      <description summary="set the xcursor theme of the given seat"/>
+      <arg name="seat" type="object" interface="wl_seat"/>
+      <arg name="name" type="string" summary="name of the theme"/>
+      <arg name="size" type="uint" summary="size at scale factor 1"/>
+    </request>
+
+    <request name="opacity">
+      <description summary="set opacity of views">
+        The initial, focused, and unfocused args are values between 0.0
+        (fully transparent) and 1.0 (fully opaque). The delta_t arg may be
+        set to 0 to disable animations on focus shift. The step arg must be
+        in the range 0.05 to 1.0. Passing a value outside of these stated
+        ranges is a protocol error.
+      </description>
+      <arg name="initial" type="fixed" summary="opacity of views on map"/>
+      <arg name="focused" type="fixed" summary="opacity of focused views"/>
+      <arg name="unfocused" type="fixed" summary="opacity of unfocused views"/>
+      <arg name="delta_t" type="uint" summary="step time in milliseconds"/>
+      <arg name="step" type="fixed" summary="opacity change per step"/>
     </request>
   </interface>
 
-  <interface name="zriver_command_callback_v1" version="1">
-    <description summary="callback object">
-      This object is created by the run_command request. Exactly one of the
-      success or failure events will be sent. This object will be destroyed
-      by the compositor after one of the events is sent.
+  <interface name="zriver_enter_mode_callback_v2" version="1">
+    <description summary="callback for zriver_control_v2.enter_mode request">
+      This object is destroyed by the compositor after any of its events
+      is sent.
     </description>
 
     <event name="success">
-      <description summary="command successful">
-        Sent when the command has been successfully received and executed by
-        the compositor. Some commands may produce output, in which case the
-        output argument will be a non-empty string.
-      </description>
-      <arg name="output" type="string" summary="the output of the command"/>
+      <description summary="mode entered successfully"/>
     </event>
 
-    <event name="failure">
-      <description summary="command failed">
-        Sent when the command could not be carried out. This could be due to
-        sending a non-existent command, no command, not enough arguments, too
-        many arguments, invalid arguments, etc.
+    <event name="invalid_mode">
+      <description summary="mode invalid">
+        The requested mode either does not exist or is the "locked" mode
+        which cannot be manually entered.
       </description>
-      <arg name="failure_message" type="string"
-        summary="a message explaining why failure occurred"/>
+    </event>
+  </interface>
+
+  <interface name="zriver_map_callback_v2" version="1">
+    <description summary="callback for zriver_control_v2.map request">
+      This object is destroyed by the compositor after any of its events
+      is sent.
+    </description>
+
+    <event name="success">
+      <description summary="map executed successfully"/>
+    </event>
+
+    <event name="invalid_mode">
+      <description summary="the requested mode does not exist"/>
+    </event>
+
+    <event name="invalid_key">
+      <description summary="invalid XKB key name">
+        The requested key is not a valid XKB key. See
+        /usr/include/xkbcommon/xkbcommon-keysyms.h for a list of valid
+        key names.
+      </description>
+    </event>
+  </interface>
+
+  <interface name="zriver_map_pointer_callback_v2" version="1">
+    <description summary="callback for zriver_control_v2.map_pointer request">
+      This object is destroyed by the compositor after any of its events
+      is sent.
+    </description>
+
+    <event name="success">
+      <description summary="map executed successfully"/>
+    </event>
+
+    <event name="invalid_mode">
+      <description summary="the requested mode does not exist"/>
+    </event>
+
+    <event name="invalid_button">
+      <description summary="invalid linux event code name">
+        The requested button is not a valid linux event code name. See
+        /usr/include/linux/input-event-codes.h for a list of valid
+        event code names.
+      </description>
     </event>
   </interface>
 </protocol>
