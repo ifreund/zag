@@ -47,10 +47,13 @@
     </request>
   </interface>
 
-  <interface name="zriver_output_status_v1" version="1">
+  <interface name="zriver_output_status_v1" version="2">
     <description summary="track output tags and focus">
       This interface allows clients to receive information about the current
       windowing state of an output.
+
+      After all river_output_status properties have been sent, wl_output.done
+      is sent to allow atomic changes.
     </description>
 
     <request name="destroy" type="destructor">
@@ -75,9 +78,16 @@
       </description>
       <arg name="tags" type="array" summary="array of 32-bit bitfields"/>
     </event>
+
+    <event name="layout">
+      <description summary="layout status of an output">
+        Sent when the layout of an output has changed.
+      </description>
+      <arg name="layout_name" type="string" summary="name of the layout"/>
+    </event>
   </interface>
 
-  <interface name="zriver_seat_status_v1" version="1">
+  <interface name="zriver_seat_status_v1" version="2">
     <description summary="track seat focus">
       This interface allows clients to receive information about the current
       focus of a seat. Note that (un)focused_output events will only be sent
@@ -112,6 +122,9 @@
         if no view is focused or the focused view did not set a title.
       </description>
       <arg name="title" type="string" summary="title of the focused view"/>
+      <arg name="app_id" type="string" summary="app-id of the focused view"/>
+      <arg name="shell" type="string" summary="shell of the focused view"/>
+      <arg name="tags" type="uint" summary="32-bit bitfield"/>
     </event>
   </interface>
 </protocol>
