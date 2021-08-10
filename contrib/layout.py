@@ -33,25 +33,22 @@ def layout_handle_layout_demand(layout, view_count, usable_w, usable_h, tags, se
     y = 0
     w = usable_w
     h = usable_h
-    i = 0
-    while i < view_count:
-        if i == view_count - 1:
-            layout.push_view_dimensions(x, y, w, h, serial)
-        else:
-            if i % 2 == 0:
-                w = int(w/2)
-                if i % 4 == 2:
-                    layout.push_view_dimensions(x + w, y, w, h, serial)
-                else:
-                    layout.push_view_dimensions(x, y, w, h, serial)
-                    x += w
+    for i in range(0, view_count - 1):
+        if i % 2 == 0:
+            w //= 2
+            if i % 4 == 2:
+                layout.push_view_dimensions(x + w, y, w, h, serial)
             else:
-                h = int(h/2)
-                if i % 4 == 3:
-                    layout.push_view_dimensions(x, y + h, w, h, serial)
-                else:
-                    layout.push_view_dimensions(x, y, w, h, serial)
-                    y += h
+                layout.push_view_dimensions(x, y, w, h, serial)
+                x += w
+        else:
+            h //= 2
+            if i % 4 == 3:
+                layout.push_view_dimensions(x, y + h, w, h, serial)
+            else:
+                layout.push_view_dimensions(x, y, w, h, serial)
+                y += h
+    layout.push_view_dimensions(x, y, w, h, serial)
 
     # Committing the layout means telling the server that your code is done
     # laying out windows. Make sure you have pushed exactly the right amount of
@@ -61,7 +58,7 @@ def layout_handle_layout_demand(layout, view_count, usable_w, usable_h, tags, se
     # the server can forward to status bars. You can use it to tell the user
     # which layout is currently in use. You could also add some status
     # information status information about your layout, which is what we do here.
-    layout.commit(str(view_count) + " windows layout out by python", serial)
+    layout.commit(f"{view_count} windows layed out by python", serial)
 
 def layout_handle_namespace_in_use(layout):
     # Oh no, the namespace we choose is already used by another client! All we
@@ -81,14 +78,14 @@ class Output(object):
         self.id = None
 
     def destroy(self):
-        if self.layout != None:
+        if self.layout is not None:
             self.layout.destroy()
-        if self.output != None:
+        if self.output is not None:
             self.output.destroy()
 
     def configure(self):
         global layout_manager
-        if self.layout == None and layout_manager != None:
+        if self.layout is None and layout_manager is not None:
             # We need to set a namespace, which is used to identify our layout.
             self.layout = layout_manager.get_layout(self.output, "layout.py")
             self.layout.user_data = self
@@ -123,7 +120,7 @@ registry.dispatcher["global_remove"] = registry_handle_global_remove
 display.dispatch(block=True)
 display.roundtrip()
 
-if layout_manager == None:
+if layout_manager is None:
     print("No layout_manager, aborting")
     quit()
 
