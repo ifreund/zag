@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="river_toplevel_v1">
+  <copyright>
+    Copyright 2021 The River Developers
+
+    Permission to use, copy, modify, and/or distribute this software for any
+    purpose with or without fee is hereby granted, provided that the above
+    copyright notice and this permission notice appear in all copies.
+
+    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+    WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+    MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+    ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+    WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+    ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+  </copyright>
+
+  <description summary="river specific information for toplevels">
+    This protocol extends wlr-foreign-toplevel-management-unstable-v1 by events
+    advertising special client states which are unique to the river Wayland
+    compositor.
+
+    Note that this protocol does not provide any way for clients to control
+    these states of other clients. That functionality can be implemented using a
+    specialized protocol extension.
+
+    Warning! The protocol described in this file is currently in the testing
+    phase. Backward compatible changes may be added together with the
+    corresponding interface version bump. Backward incompatible changes can
+    only be done by creating a new major version of the extension.
+  </description>
+
+  <interface name="river_toplevel_manager_v1" version="1">
+    <description summary="manage river toplevel objects">
+      This object will send the events for all zwlr_foreign_toplevel_handle_v1
+      objects. It is a global object to not increase the amount of needed
+      round trips. Clients can be identified by the toplevel handle.
+    </description>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the river_toplevel_manager object">
+        This request indicates that the client will not use the
+        river_toplevel_manager object any more.
+      </description>
+    </request>
+
+    <event name="tags">
+      <description summary="tags of the toplevel">
+        Sent once for every toplevel when binding the interface and again
+        whenever the tags of a toplevel change.
+      </description>
+      <arg name="tags" type="uint" summary="32-bit bitfield"/>
+      <arg name="handle" type="object" interface="zwlr_foreign_toplevel_handle_v1"/>
+    </event>
+
+    <enum name="float_state">
+      <entry name="layout" value="0"/>
+      <entry name="floating" value="1"/>
+    </enum>
+
+    <event name="floating">
+      <description summary="floating state of the toplevel">
+        Sent once for every toplevel when binding the interface and again
+        whenever the tags of a toplevel change.
+      </description>
+      <arg name="float_state" type="uint" enum="float_state"/>
+      <arg name="handle" type="object" interface="zwlr_foreign_toplevel_handle_v1"/>
+    </event>
+  </interface>
+</protocol>
+
