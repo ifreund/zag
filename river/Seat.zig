@@ -35,6 +35,7 @@ const Mapping = @import("Mapping.zig");
 const LayerSurface = @import("LayerSurface.zig");
 const Output = @import("Output.zig");
 const SeatStatus = @import("SeatStatus.zig");
+const TextInput = @import("TextInput.zig");
 const View = @import("View.zig");
 const ViewStack = @import("view_stack.zig").ViewStack;
 
@@ -81,6 +82,9 @@ focus_stack: ViewStack(*View) = .{},
 /// List of status tracking objects relaying changes to this seat to clients.
 status_trackers: std.SinglyLinkedList(SeatStatus) = .{},
 
+/// Relay for communication between text_input and input_method.
+relay: TextInput.Relay = undefined,
+
 request_set_selection: wl.Listener(*wlr.Seat.event.RequestSetSelection) =
     wl.Listener(*wlr.Seat.event.RequestSetSelection).init(handleRequestSetSelection),
 request_start_drag: wl.Listener(*wlr.Seat.event.RequestStartDrag) =
@@ -102,6 +106,7 @@ pub fn init(self: *Self, name: [*:0]const u8) !void {
     };
     self.wlr_seat.data = @ptrToInt(self);
 
+    try self.relay.init(self);
     try self.cursor.init(self);
 
     self.wlr_seat.events.request_set_selection.add(&self.request_set_selection);
@@ -111,6 +116,7 @@ pub fn init(self: *Self, name: [*:0]const u8) !void {
 }
 
 pub fn deinit(self: *Self) void {
+    self.relay.deinit();
     self.cursor.deinit();
     self.mapping_repeat_timer.remove();
 
@@ -238,6 +244,8 @@ pub fn setFocusRaw(self: *Self, new_focus: FocusTarget) void {
                 self.wlr_seat.keyboardNotifyEnter(wlr_surface, null, 0, null);
             }
 
+            self.relay.setSurfaceFocus(wlr_surface);
+
             if (server.input_manager.pointer_constraints.constraintForSurface(wlr_surface, self.wlr_seat)) |constraint| {
                 @intToPtr(*PointerConstraint, constraint.data).setAsActive();
             } else if (self.cursor.constraint) |constraint| {
@@ -247,6 +255,7 @@ pub fn setFocusRaw(self: *Self, new_focus: FocusTarget) void {
             }
         } else {
             self.wlr_seat.keyboardClearFocus();
+            self.relay.setSurfaceFocus(null);
 
             if (self.cursor.constraint) |constraint| {
                 PointerConstraint.warpToHint(&self.cursor);

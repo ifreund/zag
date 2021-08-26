@@ -120,6 +120,16 @@ fn handleKey(listener: *wl.Listener(*wlr.Keyboard.event.Key), event: *wlr.Keyboa
         }
     }
 
+    // TODO: Probably not a great implementation yet.
+    // if (!handled) {
+    //     const keyboard_grab = self.getInputMethodGrab();
+    //     if (keyboard_grab) |kb| {
+    //         kb.setKeyboard(kb.keyboard);
+    //         kb.sendKey(event.time_msec, event.keycode, event.state);
+    //         handled = true;
+    //     }
+    // }
+
     if (!handled) {
         // Otherwise, we pass it along to the client.
         const wlr_seat = self.seat.wlr_seat;
@@ -163,4 +173,13 @@ fn handleBuiltinMapping(self: Self, keysym: xkb.Keysym) bool {
         },
         else => return false,
     }
+}
+
+fn getInputMethodGrab(self: Self) ?*wlr.InputMethodV2.KeyboardGrab {
+    const input_method = self.seat.relay.input_method;
+    return blk: {
+        if (input_method) |im| {
+            break :blk &im.keyboard_grab;
+        } else break :blk null;
+    };
 }
