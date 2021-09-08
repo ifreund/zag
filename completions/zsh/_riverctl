@@ -48,6 +48,7 @@ _riverctl_subcommands()
         'border-color-urgent:Set the border color of urgent views'
         'border-width:Set the border width to pixels'
         'focus-follows-cursor:Configure the focus behavior when moving cursor'
+        'reset-config:Reset configuration to default values'
         'set-repeat:Set the keyboard repeat rate and repeat delay'
         'set-cursor-warp:Set the cursor warp mode.'
         'xcursor-theme:Set the xcursor theme'

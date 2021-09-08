@@ -259,6 +259,13 @@ A complete list may be found in _/usr/include/linux/input-event-codes.h_
 	If the view to be focused is on an output that does not have focus,
 	focus is switched to that output.
 
+*reset-config*
+	Reset rivers configuration to their default values, with the exception
+	of input configuration. This includes clearing all key maps, modes and
+	filters as well as the layout namespaces of all outputs.
+
+	Note that this does not affect the configuration of layout clients.
+
 *set-cursor-warp* *disabled*|*on-output-change*
 	Set the cursor warp mode. There are two available modes:
 

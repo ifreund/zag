@@ -25,6 +25,7 @@ function __riverctl_completion ()
 			send-layout-cmd \
 			set-focused-tags \
 			focus-previous-tags \
+			reset-config \
 			set-view-tags \
 			toggle-focused-tags \
 			toggle-view-tags \

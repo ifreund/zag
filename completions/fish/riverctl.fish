@@ -43,6 +43,7 @@ complete -c riverctl -x -n '__fish_riverctl_complete_no_subcommand' -a float-fil
 complete -c riverctl -x -n '__fish_riverctl_complete_no_subcommand' -a focus-output           -d 'Focus the next or previous output'
 complete -c riverctl -x -n '__fish_riverctl_complete_no_subcommand' -a focus-view             -d 'Focus the next or previous view in the stack'
 complete -c riverctl -x -n '__fish_riverctl_complete_no_subcommand' -a input                  -d 'Create a configuration rule for an input device'
+complete -c riverctl -x -n '__fish_riverctl_complete_no_subcommand' -a reset-config           -d 'Reset configuration to default values'
 complete -c riverctl -x -n '__fish_riverctl_complete_no_subcommand' -a list-inputs            -d 'List all input devices'
 complete -c riverctl -x -n '__fish_riverctl_complete_no_subcommand' -a list-input-configs     -d 'List all input configurations'
 complete -c riverctl -x -n '__fish_riverctl_complete_no_subcommand' -a move                   -d 'Move the focused view in the specified direction'

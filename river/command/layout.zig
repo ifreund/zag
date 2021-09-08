@@ -35,7 +35,9 @@ pub fn outputLayout(
     if (args.len > 2) return Error.TooManyArguments;
 
     const output = seat.focused_output;
+    const old_layout_namespace = output.layout_namespace;
     output.layout_namespace = try util.gpa.dupe(u8, args[1]);
+    if (old_layout_namespace) |namespace| util.gpa.free(namespace);
     output.handleLayoutNamespaceChange();
 }
 
