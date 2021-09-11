@@ -72,6 +72,11 @@ over the Wayland protocol.
 	Send the focused view to the next or previous output or the closest
 	output in any direction.
 
+*set-position* _x_ _y_
+	Set the position of the focused view to (x, y) relative to the current
+	output. The view will always remain within the bounds of the current
+	output. The view will be set to floating.
+
 *spawn* _shell_command_
 	Run _shell_command_ using `/bin/sh -c _shell_command_`. Note that
 	*spawn* only takes a single argument. To spawn a command taking

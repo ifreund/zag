@@ -50,6 +50,23 @@ pub fn move(
     apply(view);
 }
 
+pub fn setPosition(
+    allocator: *std.mem.Allocator,
+    seat: *Seat,
+    args: []const [:0]const u8,
+    out: *?[]const u8,
+) Error!void {
+    if (args.len < 3) return Error.NotEnoughArguments;
+    if (args.len > 3) return Error.TooManyArguments;
+
+    const x = try std.fmt.parseInt(i32, args[1], 10);
+    const y = try std.fmt.parseInt(i32, args[2], 10);
+
+    const view = getView(seat) orelse return;
+    view.setPosition(x, y);
+    apply(view);
+}
+
 pub fn snap(
     allocator: *std.mem.Allocator,
     seat: *Seat,
