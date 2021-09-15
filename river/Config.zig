@@ -37,6 +37,8 @@ pub const WarpCursorMode = enum {
     @"on-output-change",
 };
 
+pub const AdaptiveSyncMode = enum { disabled, enabled };
+
 /// Color of background in RGBA (alpha should only affect nested sessions)
 background_color: [4]f32 = [_]f32{ 0.0, 0.16862745, 0.21176471, 1.0 }, // Solarized base03
 
@@ -85,6 +87,9 @@ repeat_rate: u31 = 25,
 
 /// Keyboard repeat delay in milliseconds
 repeat_delay: u31 = 600,
+
+/// When enabled, allow adaptive sync on all monitors
+adaptive_sync: AdaptiveSyncMode = .disabled,
 
 pub fn init() !Self {
     var self = Self{

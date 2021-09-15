@@ -263,6 +263,9 @@ A complete list may be found in _/usr/include/linux/input-event-codes.h_
 	If the view to be focused is on an output that does not have focus,
 	focus is switched to that output.
 
+*set-adaptive-sync* *disabled*|*enabled* 
+	Enable or disable adaptive sync on all outputs.
+
 *set-cursor-warp* *disabled*|*on-output-change*
 	Set the cursor warp mode. There are two available modes:
 

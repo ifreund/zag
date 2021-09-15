@@ -51,6 +51,7 @@ _riverctl_subcommands()
         'focus-follows-cursor:Configure the focus behavior when moving cursor'
         'set-repeat:Set the keyboard repeat rate and repeat delay'
         'set-cursor-warp:Set the cursor warp mode.'
+	'set-adaptive-sync:Set adaptive sync state'
         'xcursor-theme:Set the xcursor theme'
         # Input
         'input:Configure input devices'
@@ -140,6 +141,7 @@ _riverctl()
                 attach-mode) _alternative 'arguments:args:(top bottom)' ;;
                 focus-follows-cursor) _alternative 'arguments:args:(disabled normal)' ;;
                 set-cursor-warp) _alternative 'arguments:args:(disabled on-output-change)' ;;
+		set-adaptive-sync) _alternative 'arguments:args:(disabled enabled)' ;;
                 *) return 0 ;;
             esac
         ;;

@@ -82,6 +82,7 @@ complete -c riverctl -x -n '__fish_riverctl_complete_no_subcommand' -a border-wi
 complete -c riverctl -x -n '__fish_riverctl_complete_no_subcommand' -a focus-follows-cursor   -d 'Configure the focus behavior when moving cursor'
 complete -c riverctl -x -n '__fish_riverctl_complete_no_subcommand' -a set-repeat             -d 'Set the keyboard repeat rate and repeat delay'
 complete -c riverctl -x -n '__fish_riverctl_complete_no_subcommand' -a set-cursor-warp        -d 'Set the cursor warp mode.'
+complete -c riverctl -x -n '__fish_riverctl_complete_no_subcommand' -a set-adaptive-sync      -d 'Set adaptive sync state'
 complete -c riverctl -x -n '__fish_riverctl_complete_no_subcommand' -a xcursor-theme          -d 'Set the xcursor theme'
 
 # Subcommands
@@ -97,6 +98,7 @@ complete -c riverctl -x -n '__fish_seen_subcommand_from unmap'                -a
 complete -c riverctl -x -n '__fish_seen_subcommand_from attach-mode'          -a 'top bottom'
 complete -c riverctl -x -n '__fish_seen_subcommand_from focus-follows-cursor' -a 'disabled normal'
 complete -c riverctl -x -n '__fish_seen_subcommand_from set-cursor-warp'      -a 'disabled on-output-change'
+complete -c riverctl -x -n '__fish_seen_subcommand_from set-adaptive-sync'    -a 'disabled enabled'
 
 # Subcommands for 'input'
 complete -c riverctl -x -n '__fish_seen_subcommand_from input; and __fish_riverctl_complete_from_input'         -a "(__riverctl_list_input_devices)"

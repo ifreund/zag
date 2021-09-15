@@ -110,6 +110,19 @@ pub fn setCursorWarp(
         return Error.UnknownOption;
 }
 
+pub fn setAdaptiveSync(
+    allocator: *std.mem.Allocator,
+    seat: *Seat,
+    args: []const [:0]const u8,
+    out: *?[]const u8,
+) Error!void {
+    if (args.len < 2) return Error.NotEnoughArguments;
+    if (args.len > 2) return Error.TooManyArguments;
+    server.config.adaptive_sync = std.meta.stringToEnum(Config.AdaptiveSyncMode, args[1]) orelse
+        return Error.UnknownOption;
+    var it = server.root.outputs.first;
+    while (it) |node| : (it = node.next) node.data.wlr_output.enableAdaptiveSync(server.config.adaptive_sync == .enabled);
+}
 /// Parse a color in the format 0xRRGGBB or 0xRRGGBBAA
 fn parseRgba(string: []const u8) ![4]f32 {
     if (string.len != 8 and string.len != 10) return error.InvalidRgba;

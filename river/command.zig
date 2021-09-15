@@ -70,6 +70,7 @@ const str_to_impl_fn = [_]struct {
     .{ .name = "resize",                 .impl = @import("command/move.zig").resize },
     .{ .name = "send-layout-cmd",        .impl = @import("command/layout.zig").sendLayoutCmd },
     .{ .name = "send-to-output",         .impl = @import("command/output.zig").sendToOutput },
+    .{ .name = "set-adaptive-sync",      .impl = @import("command/config.zig").setAdaptiveSync },
     .{ .name = "set-cursor-warp",        .impl = @import("command/config.zig").setCursorWarp },
     .{ .name = "set-focused-tags",       .impl = @import("command/tags.zig").setFocusedTags },
     .{ .name = "set-repeat",             .impl = @import("command/set_repeat.zig").setRepeat },

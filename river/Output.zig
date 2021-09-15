@@ -112,6 +112,10 @@ pub fn init(self: *Self, wlr_output: *wlr.Output) !void {
         try wlr_output.commit();
     }
 
+    if (server.config.adaptive_sync == .enabled) {
+        wlr_output.enableAdaptiveSync(true);
+    }
+
     self.* = .{
         .wlr_output = wlr_output,
         .damage = try wlr.OutputDamage.create(wlr_output),
