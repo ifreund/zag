@@ -38,7 +38,7 @@ const log = std.log.scoped(.layout);
 
 const Error = error{ViewDimensionMismatch};
 
-const timeout_ms = 1000;
+const timeout_ms = 200;
 
 serial: u32,
 /// Number of views for which dimensions have not been pushed.
