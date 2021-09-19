@@ -31,6 +31,7 @@ const Subsurface = @import("Subsurface.zig");
 const View = @import("View.zig");
 const ViewStack = @import("view_stack.zig").ViewStack;
 const XdgPopup = @import("XdgPopup.zig");
+const Cursor = @import("Cursor.zig");
 
 const log = std.log.scoped(.xdg_shell);
 
@@ -348,7 +349,7 @@ fn handleRequestMove(
     const self = @fieldParentPtr(Self, "request_move", listener);
     const seat = @intToPtr(*Seat, event.seat.seat.data);
     if ((self.view.pending.float or self.view.output.current.layout == null) and !self.view.pending.fullscreen)
-        seat.cursor.enterMode(.move, self.view);
+        seat.cursor.enterMode(.move, self.view, null);
 }
 
 /// Called when the client asks to be resized via the cursor.
@@ -356,7 +357,10 @@ fn handleRequestResize(listener: *wl.Listener(*wlr.XdgToplevel.event.Resize), ev
     const self = @fieldParentPtr(Self, "request_resize", listener);
     const seat = @intToPtr(*Seat, event.seat.seat.data);
     if ((self.view.pending.float or self.view.output.current.layout == null) and !self.view.pending.fullscreen)
-        seat.cursor.enterMode(.resize, self.view);
+        seat.cursor.enterMode(.resize, self.view, Cursor.ResizeDirection.fromWlrEdges(event.edges) catch {
+            log.err("Client requested resize with invalid edge values. The request will be ignored.", .{});
+            return;
+        });
 }
 
 /// Called when the client sets / updates its title
